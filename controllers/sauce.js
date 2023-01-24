@@ -3,6 +3,7 @@
 const Sauce = require("../models/sauce");
 const fs = require("fs");
 
+//Créer une sauce
 exports.createSauce = (req, res, next) => {
   //La première chose à faire, c'est de parser l'objet de requête.En effet l'objet qui nous a été envoyé dans l'objet de requête va être envoyé sous forme json tjrs mais en chaine de caractères.Il nous faut donc commencer par parser cet objet à l'aide de la foncion parse
   // const thingObject = {...req.body};
@@ -16,7 +17,7 @@ exports.createSauce = (req, res, next) => {
     userId: req.auth.userId,
     imageUrl: `${req.protocol}://${req.get("host")}/images/${
       req.file.filename
-    }`,
+    }`
   });
   //Il nous faut maintenant enregistrer cet objet dans la base de donnée à l'aide de la fonctin save() qui nous retourne donc une promesse, nous avons 2 choses à gérer .then pour le réussite et catch pour l'échec.
   sauce
@@ -26,9 +27,10 @@ exports.createSauce = (req, res, next) => {
     })
     .catch((error) => {
       res.status(400).json({ error });
-    });
+    })
 };
 
+//Modifier une sauce
 exports.modifySauce = (req, res, next) => {
   //Nous regardons ici s'il y  un champs file, si c'est le cas, nous allons récupérer notre objet en parsant la chaine de caractère
   const sauceObject = req.file
@@ -37,7 +39,7 @@ exports.modifySauce = (req, res, next) => {
         //et en créant l'url de l'image comme nous l'ovons fait prédemment
         imageUrl: `${req.protocol}://${req.get("host")}/images/${
           req.file.filename
-        }`,
+        }`
         //Si ce n'est pas le cas, s'il n'a pas d'objet transmis, nous allons récupérer l'objet simplement dans le corps de la requête.
       }
     : { ...req.body };
@@ -57,22 +59,23 @@ exports.modifySauce = (req, res, next) => {
             ...sauceObject,
             likes: sauce.likes,
             dislikes: sauce.dislikes,
-            usersDisliked: ["_1234"],
+            usersDisliked: sauce.usersDisliked,
             usersLiked: sauce.usersLiked,
-            _id: req.params.id,
+            _id: req.params.id
           }
         )
           //Maintenant il faut gérer cette promesse donc la réussite (then) ou l'erreur(catch).En cas de réussite, nous allons envoyer un message de succès.
           .then(() => res.status(200).json({ message: "Objet modifié!" }))
           //Et en cas d'échec, nous allons renvoyer l'erreur
-          .catch((error) => res.status(401).json({ error }));
+          .catch((error) => res.status(401).json({ error }))
       }
     })
     .catch((error) => {
       res.status(400).json({ error });
-    });
+    })
 };
 
+//Supprimer une sauce
 exports.deleteSauce = (req, res, next) => {
   //Nous allons maintenant modifié notre route delete afin de supprimer l'objet uniquement si c'est le bon utilisateur qui demande la suppression.Il nous faut donc commencer par vérifier les droits.Pour cela nous allons commencer par récupérer l'objet en base, de même manière que nous avons fait pour la route put.
   Sauce.findOne({ _id: req.params.id })
@@ -100,22 +103,25 @@ exports.deleteSauce = (req, res, next) => {
     //Gérer le cas d'erreur.En cas d'erreur, nous renvoyons simplement une erreur 500 via un objet json
     .catch((error) => {
       res.status(500).json({ error });
-    });
+    })
 };
 
+//Afficher une sauce
 exports.getOneSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id })
     .then((sauce) => res.status(200).json(sauce))
-    .catch((error) => res.status(400).json({ error }));
+    .catch((error) => res.status(400).json({ error }))
 };
 
+//Afficher toutes les sauces
 exports.getAllSauces = (req, res, next) => {
   Sauce.find()
     .then((sauces) => res.status(200).json(sauces))
-    .catch((error) => res.status(400).json({ error }));
+    .catch((error) => res.status(400).json({ error }))
 };
 
-//like/dislike sauce.  Il y a 4 cas possibles: quand like = 1, l'utilisateur aime (= like) la sauce/quand like = 0, l'utilisateur annule son like ou son dislike/ et quand like = -1, 'utilisateur n'aime pas (= dislike) la sauce.
+//like/dislike sauce.  Il y a 4 cas possibles: quand like = 1, l'utilisateur aime (= like) la sauce/quand like = 0, l'utilisateur annule son like ou son dislike/ et quand like = -1, l'utilisateur n'aime pas (= dislike) la sauce.
+//Ce code exporte une fonction "likeSauce" qui gère une requête HTTP pour aimer ou ne pas aimer une sauce. La fonction vérifie si l'ID utilisateur dans le corps de la requête est le même que l'ID de l'utilisateur authentifié, et si ce n'est pas le cas, renvoie un statut 401,code avec un message d'erreur. Ensuite, il trouve une sauce dans la base de données par son identifiant, passé en paramètre dans la requête, et incrémente ou décrémente ses goûts ou ses aversions en fonction de la valeur du champ "like" dans le corps de la requête. Ça aussi ajoute ou supprime l'identifiant de l'utilisateur du tableau aimé ou détesté de la sauce. Enfin, la fonction met à jour la sauce dans la base de données et envoie une réponse de succès ou d'erreur au client.
 exports.likeSauce = (req, res, next) => {
   const userId = req.body.userId;
   if (userId != req.auth.userId) {
@@ -125,29 +131,31 @@ exports.likeSauce = (req, res, next) => {
     .then((sauce) => {
       const like = req.body.like;
       let succesMessage = "";
+      //Cas où like = -1, l'utilisateur n'aime pas (= dislike) la sauce.
       if (like == -1) {
         if (sauce.usersDisliked.includes(userId)) {
-          return res
-            .status(401)
-            .json({
-              error: "Vous ne pouvez pas disliker la même sauce plusieurs fois",
-            });
+          return res.status(401).json({
+            error: "Vous ne pouvez pas disliker la même sauce plusieurs fois",
+          });
         }
         sauce.dislikes++;
-        console.log("@", sauce.usersDisliked, "@");
+        console.log("Test dislikes sauce: ", sauce.usersDisliked);
         sauce.usersDisliked.push(userId);
         succesMessage = "Sauce dislikée";
+        //cas où like = 1, l'utilisateur aime (= like) la sauce
       } else if (like == 1) {
         if (sauce.usersLiked.includes(userId)) {
           return res
             .status(401)
             .json({
-              error: "Vous ne pouvez pas liker la même sauce plusieurs fois",
+              error: "Vous ne pouvez pas liker la même sauce plusieurs fois"
             });
         }
         sauce.likes++;
+        console.log("Test likes sauce:", sauce.usersLiked);
         sauce.usersLiked.push(userId);
         succesMessage = "Sauce likée";
+        //cas où like = 0, l'utilisateur annule son like ou son dislike
       } else {
         const likeIndex = sauce.usersLiked.findIndex((id) => id == userId);
         const disLikeIndex = sauce.usersDisliked.findIndex(
@@ -167,13 +175,15 @@ exports.likeSauce = (req, res, next) => {
             .json({ error: "Aucun like ou dislike à supprimer" });
         }
       }
-      Sauce.updateOne({ _id: req.params.id }, sauce);
-      then(() => res.status(200).json({ message: succesMessage })).catch(
+      //Mise à jours de la sauce dans la base de donnée
+      Sauce.updateOne({ _id: req.params.id }, sauce)
+      .then(() => res.status(200).json({ message: succesMessage }))
+      .catch(
         (error) => res.status(401).json({ error })
       );
     })
     .catch((error) => {
-      console.log(req.params.id);
+      console.log("_id:", req.params.id);
       return res.status(400).json({ error });
-    });
+    })
 };

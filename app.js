@@ -1,9 +1,6 @@
 //On aura besoin de express dans notre app.js donc on va l'importer ici.
 const express = require('express');
 
-//On créé une constante app qui sera notre application, qui ne contient rien pour le moment. On fait appelle à la méthode express, ce qui permet de créer une application express
-const app = express();
-
 //Après avoir installé mongoose avec la commande npm install mongoose dpuis le terminal, on crée une constante mongoose et on importe mongoose ici
 const mongoose = require('mongoose');
 
@@ -22,6 +19,10 @@ mongoose.connect(`mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGOD
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
+//On créé une constante app qui sera notre application, qui ne contient rien pour le moment. On fait appelle à la méthode express, ce qui permet de créer une application express
+const app = express();
+
+//LES MIDDLEWARES:
 // On a tout ce qui est CORS. On rajoute le 1er middleware qui sera exécuté par le server, il s'agit d'un middlewre générale, on ne va pas mettre une route spécifique, ce middleware sera appliqué à toutes les routes, à toutes les requêtes envoyées à notre serveur.
 //ça c'est concernant les interconnections, les différentes connexions entre les différents serveurs, parce que les HTTP font en sorte que les connexions du serveur soient sécurisés.ça c'est pour permettre qu'ils ne soient pas sécurisés.
 app.use((req, res, next) => {
@@ -31,7 +32,6 @@ app.use((req, res, next) => {
   next();
 });
 
-//ça se sont les middlewares:
 //Ce que ce middleware fait, c'est qu'il intercepte toutes les requêtes qui ont un content type json, qui contient du json et nous met à disposition ce contenu, ce corps de la requête sur l'objet de requête dans req.body. Pour avoir accès au corps de la requête
 app.use(express.json());
 //Ici avant, on avait le app.get, app.use. Là, on va simplment dire app.use, le début de la route /api/stuff et on va dire pour cette route là, on utilse le routeur qui est exposé par stuff route. Tout la logique qui était là avant qui polluait notre app.js est maintenant importé et ompliqué à la même route. Et ce qui est importé, c'est le routeur qui est exporté par le stuff.js dans route.

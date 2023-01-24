@@ -12,8 +12,7 @@ const User = require("../models/User");
 //Là, on a notre fonction signup qui va crypter le mdp qui va prendre ce mdp crypté, qui va créé un nouveau user avec ce mdp crypté et l'adresse mail passé dans le corps de la requête et va enregistrer cet utilisateur dans la base de donnée.
 exports.signup = (req, res, next) => {
 
-     //On commence par appeler bcrypt.hash(), c'est la fonction pour crypter, pour hasher le mdp, on  va lui passer le mdp du corps de la requête qui sera passé par le frontend, 10 c'est le solde combien de fois, on exécute l
-     //On commence par appeler bcrypt.hash, c'est la fonction pour hasher, pour crypter un mot de passe, on va lui passer le mdp du corps de la requête qui sera passer par le frontend,le solde c'est combion de fois on exécute l'algorithme de  hashage, là on va faire 10 tours, ça suffit pour faire un mdp sécurisé.Comme c'est de la méthode asynchrone, donc on aura un bloc then et un bloc catch 
+     //On commence par appeler bcrypt.hash(), c'est la fonction pour hasher, pour crypter un mot de passe, on va lui passer le mdp du corps de la requête qui sera passer par le frontend,le solde c'est combion de fois on exécute l'algorithme de  hashage, là on va faire 10 tours, ça suffit pour faire un mdp sécurisé.Comme c'est de la méthode asynchrone, donc on aura un bloc then et un bloc catch 
      bcrypt.hash(req.body.password, 10)
       //Ici on va récupérer le hash du mdp qu'on va ensutte enregistrer dans un nouveau user qu'on va enregistrer dans la base de donnée.
       .then(hash => {
@@ -24,7 +23,7 @@ exports.signup = (req, res, next) => {
           //Et comme le mdp, on va lui passer le mdp crypté afin de ne pas stocker de mdp en blanc.
           password: hash
         });
-        //Et maintenant comme le thine, on va enregistrer avec la méthode save() de notre user pour l'enregistrer dans la base de donnée
+        //Et maintenant, on va enregistrer avec la méthode save() de notre user pour l'enregistrer dans la base de donnée
         user.save()
           //Dans le then, on va simplement renvoyer un 201 pour une cr&ation de ressource et on va renvoyer le message utilisateur créé.
           .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))

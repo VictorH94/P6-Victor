@@ -3,7 +3,7 @@
 //Pour créer un routeur express, on aura besoin d'express, donc on importe express ici
 const express = require('express');
 
-//On crée un routeur avec la méthode routeur d"express
+//On crée un routeur avec la méthode routeur d"express. Routeur c'est une méthode qui existe sur express, il faut l'invoquer.
 const router = express.Router();
 
 //Nous importans notre middleware d'auth, nouvellement créé
