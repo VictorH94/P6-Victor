@@ -11,15 +11,19 @@ exports.createSauce = (req, res, next) => {
   //Et nous allons supprimer dans cet objet 2 champs, le champs _id, puisque le champs de l'id va être généré par automatiquement par notre base de donnée.Le champs userId qui correspond à la personne qui a crée l'objet.Tout simplement, il ne faut pas faire confiance au client.
   delete sauceObject._id;
   delete sauceObject._userId;
-  //Donc ce que nous allons faire ici, nous allons utiliser le userId qui vient du token d'authentification.Nous créons donc notre objet avec ce qui nous a été placé moins les 2 champs supprimés.Le userId, nous l'extrayons de l'objet requête grace à notre middleware et nous allons générer l'url de l'image.Le seul Pb c'est que multer lui, nous passe que le nom de fichier, il faut donc générer l'url par nous même, pour cela c'est assez simple, nous faisons appel à des propriétés de requête donc le protocol en premier lieu, le nom d'hôte /images puisque c'est là que nous stockons l'image et nom de fichier tel qu'il nous a été donné par multer.
+  //On créé une instance de notre modèle Sauce en lui passant un objet JavaScript contenant toutes les informations requises du corps de requête analysé (en ayant supprimé en amont le faux_id envoyé par le front-end).
+  //Nous allons utiliser le userId qui vient du token d'authentification.Nous créons donc notre objet avec ce qui nous a été placé moins les 2 champs supprimés.Le userId, nous l'extrayons de l'objet requête grace à notre middleware et nous allons générer l'url de l'image.Le seul Pb c'est que multer lui, nous passe que le nom de fichier, il faut donc générer l'url par nous même, pour cela c'est assez simple, nous faisons appel à des propriétés de requête donc le protocol en premier lieu, le nom d'hôte /images puisque c'est là que nous stockons l'image et nom de fichier tel qu'il nous a été donné par multer.
   const sauce = new Sauce({
+    //On utilie le raccourcis js, l'opérateur spread et on passe sauceOject, ça va copier les champs dans la body de la request, dans le corps de la requête et il va détailler les informations(le titre, la description etc...)
     ...sauceObject,
     userId: req.auth.userId,
     imageUrl: `${req.protocol}://${req.get("host")}/images/${
       req.file.filename
     }`
   });
-  //Il nous faut maintenant enregistrer cet objet dans la base de donnée à l'aide de la fonctin save() qui nous retourne donc une promesse, nous avons 2 choses à gérer .then pour le réussite et catch pour l'échec.
+
+  //Il nous faut maintenant enregistrer cet objet dans la base de donnée à l'aide de la fonction save() qui nous retourne donc une promesse, nous avons 2 choses à gérer .then pour le réussite et catch pour l'échec.
+  //La méthode save() renvoie une Promise. Ainsi, dans notre bloc then() , nous renverrons une réponse de réussite avec un code 201 de réussite. Dans notre bloc catch() , nous renverrons une réponse avec l'erreur générée par Mongoose ainsi qu'un code d'erreur 400.
   sauce
     .save()
     .then(() => {
@@ -53,21 +57,43 @@ exports.modifySauce = (req, res, next) => {
         res.status(401).json({ message: "Not authorized" });
         //Maintenant dans l'autre cas, c'est que c'est le bon utilisateur, il ne nous reste plus qu'à mettre à jours notre enregistrement et donc nous passons notre filtre qui va dire quel est l'enregistrement à mettre à jours et avec quel objet ? donc l'objet en question c'est que nous avons récupéré dans le corps de notre fonction et avec l'id qui vient des paramètres de l'url.
       } else {
-        Sauce.updateOne(
-          { _id: req.params.id },
-          {
-            ...sauceObject,
-            likes: sauce.likes,
-            dislikes: sauce.dislikes,
-            usersDisliked: sauce.usersDisliked,
-            usersLiked: sauce.usersLiked,
-            _id: req.params.id
-          }
-        )
-          //Maintenant il faut gérer cette promesse donc la réussite (then) ou l'erreur(catch).En cas de réussite, nous allons envoyer un message de succès.
-          .then(() => res.status(200).json({ message: "Objet modifié!" }))
-          //Et en cas d'échec, nous allons renvoyer l'erreur
-          .catch((error) => res.status(401).json({ error }))
+        if (req.file) {
+          const filename = sauce.imageUrl.split("/images/")[1];
+          fs.unlink(`images/${filename}`, () => {
+            //Et maintenant, nous pouvns supprimer notre enregistrement dans la base de donnée avec cet objet qui nous sert de filtre de sélecteur
+            Sauce.updateOne(
+              { _id: req.params.id },
+              {
+                ...sauceObject,
+                likes: sauce.likes,
+                dislikes: sauce.dislikes,
+                usersDisliked: sauce.usersDisliked,
+                usersLiked: sauce.usersLiked,
+                _id: req.params.id
+              }
+            )
+              //Maintenant il faut gérer cette promesse donc la réussite (then) ou l'erreur(catch).En cas de réussite, nous allons envoyer un message de succès.
+              .then(() => res.status(200).json({ message: "Objet modifié!" }))
+              //Et en cas d'échec, nous allons renvoyer l'erreur
+              .catch((error) => res.status(401).json({ error }))
+          });
+        } else {
+          Sauce.updateOne(
+            { _id: req.params.id },
+            {
+              ...sauceObject,
+              likes: sauce.likes,
+              dislikes: sauce.dislikes,
+              usersDisliked: sauce.usersDisliked,
+              usersLiked: sauce.usersLiked,
+              _id: req.params.id
+            }
+          )
+            //Maintenant il faut gérer cette promesse donc la réussite (then) ou l'erreur(catch).En cas de réussite, nous allons envoyer un message de succès.
+            .then(() => res.status(200).json({ message: "Objet modifié!" }))
+            //Et en cas d'échec, nous allons renvoyer l'erreur
+            .catch((error) => res.status(401).json({ error }))
+        }
       }
     })
     .catch((error) => {
@@ -91,12 +117,12 @@ exports.deleteSauce = (req, res, next) => {
         fs.unlink(`images/${filename}`, () => {
           //Et maintenant, nous pouvns supprimer notre enregistrement dans la base de donnée avec cet objet qui nous sert de filtre de sélecteur
           Sauce.deleteOne({ _id: req.params.id })
-            //Nous gérons le succès, en envoyant un message  objet supprimé
-            .then(() => {
-              res.status(200).json({ message: "Objet supprimé !" });
-            })
-            //En cas d'échec, nous envoyons l'erreur 401
-            .catch((error) => res.status(401).json({ error }));
+          //Nous gérons le succès, en envoyant un message  objet supprimé
+          .then(() => {
+            res.status(200).json({ message: "Objet supprimé !" });
+          })
+          //En cas d'échec, nous envoyons l'erreur 401
+          .catch((error) => res.status(401).json({ error }));
         });
       }
     })
@@ -116,8 +142,8 @@ exports.getOneSauce = (req, res, next) => {
 //Afficher toutes les sauces
 exports.getAllSauces = (req, res, next) => {
   Sauce.find()
-    .then((sauces) => res.status(200).json(sauces))
-    .catch((error) => res.status(400).json({ error }))
+  .then((sauces) => res.status(200).json(sauces))
+  .catch((error) => res.status(400).json({ error }))
 };
 
 //like/dislike sauce.  Il y a 4 cas possibles: quand like = 1, l'utilisateur aime (= like) la sauce/quand like = 0, l'utilisateur annule son like ou son dislike/ et quand like = -1, l'utilisateur n'aime pas (= dislike) la sauce.
@@ -139,7 +165,6 @@ exports.likeSauce = (req, res, next) => {
           });
         }
         sauce.dislikes++;
-        console.log("Test dislikes sauce: ", sauce.usersDisliked);
         sauce.usersDisliked.push(userId);
         succesMessage = "Sauce dislikée";
         //cas où like = 1, l'utilisateur aime (= like) la sauce
@@ -152,7 +177,6 @@ exports.likeSauce = (req, res, next) => {
             });
         }
         sauce.likes++;
-        console.log("Test likes sauce:", sauce.usersLiked);
         sauce.usersLiked.push(userId);
         succesMessage = "Sauce likée";
         //cas où like = 0, l'utilisateur annule son like ou son dislike
@@ -183,7 +207,6 @@ exports.likeSauce = (req, res, next) => {
       );
     })
     .catch((error) => {
-      console.log("_id:", req.params.id);
       return res.status(400).json({ error });
     })
 };

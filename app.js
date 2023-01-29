@@ -1,5 +1,29 @@
 //On aura besoin de express dans notre app.js donc on va l'importer ici.
 const express = require('express');
+const app = express();
+
+//Importation de body-parser
+const bodyParser = require('body-parser');
+
+//Importation de helmet. Helmet nous aide à sécuriser notre application Express en définissant divers en-têtes HTTP
+const helmet = require('helmet');
+
+//helmet fonction de niveau supérieur est un wrapper autour de 15 middlewares plus petits.
+app.use(helmet.contentSecurityPolicy());
+app.use(helmet.crossOriginEmbedderPolicy());    
+app.use(helmet.crossOriginOpenerPolicy());
+// app.use(helmet.crossOriginResourcePolicy());
+app.use(helmet.dnsPrefetchControl());
+app.use(helmet.expectCt());
+app.use(helmet.frameguard());
+app.use(helmet.hidePoweredBy());
+app.use(helmet.hsts());
+app.use(helmet.ieNoOpen());
+app.use(helmet.noSniff());
+app.use(helmet.originAgentCluster());
+app.use(helmet.permittedCrossDomainPolicies());
+app.use(helmet.referrerPolicy());
+app.use(helmet.xssFilter());
 
 //Après avoir installé mongoose avec la commande npm install mongoose dpuis le terminal, on crée une constante mongoose et on importe mongoose ici
 const mongoose = require('mongoose');
@@ -20,7 +44,7 @@ mongoose.connect(`mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGOD
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 //On créé une constante app qui sera notre application, qui ne contient rien pour le moment. On fait appelle à la méthode express, ce qui permet de créer une application express
-const app = express();
+
 
 //LES MIDDLEWARES:
 // On a tout ce qui est CORS. On rajoute le 1er middleware qui sera exécuté par le server, il s'agit d'un middlewre générale, on ne va pas mettre une route spécifique, ce middleware sera appliqué à toutes les routes, à toutes les requêtes envoyées à notre serveur.
@@ -31,6 +55,9 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   next();
 });
+
+// Parse le body des requetes en json
+app.use(bodyParser.json());
 
 //Ce que ce middleware fait, c'est qu'il intercepte toutes les requêtes qui ont un content type json, qui contient du json et nous met à disposition ce contenu, ce corps de la requête sur l'objet de requête dans req.body. Pour avoir accès au corps de la requête
 app.use(express.json());

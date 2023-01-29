@@ -1,7 +1,8 @@
-// On va utilser mongoose pour créer ce schemas et donc on besoin de l'importer ici.On utillie la syntaxe require pour importer mongoose.
+// On va utilser mongoose pour créer ce schemas de données et donc on a besoin de l'importer ici.On utillie la syntaxe require pour importer mongoose.
 const mongoose = require('mongoose');
 
 //On créé un schéma de données qui contient les champs souhaités pour chaque Sauce, indique leur type ainsi que leur caractère (obligatoire ou non). Pour cela, on utilise la méthode Schema mise à disposition par Mongoose. Pas besoin de mettre un champ pour l'Id puisqu'il est automatiquement généré par Mongoose. 
+//La méthode  Schema  de Mongoose nous permet de créer un schéma de données pour notre base de données MongoDB.
 const sauceSchema = mongoose.Schema({
   userId: {type: String, required: true },
   name: { type: String, required: true },
@@ -17,4 +18,5 @@ const sauceSchema = mongoose.Schema({
 });
 
 //On exporte ce schéma en tant que modèle Mongoose appelé « Sauce », le rendant par là même disponible pour notre application Express.
+//La méthode  model  transforme ce modèle en un modèle utilisable.
 module.exports = mongoose.model('Sauce', sauceSchema);
