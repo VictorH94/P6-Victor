@@ -27,7 +27,7 @@ Développement Backend en Javascript
   token et le renverront automatiquement à chaque requête par la suite. Ceci permettra au back-end de vérifier que la requête est authentifiée.    
 - Protection des headers avec *helmet*
 
-## Pour tester l'applicaztion:
+## Pour tester l'application:
 1/ Cloner le repository de l'application frontend: https://github.com/OpenClassrooms-Student-Center/Web-Developer-P6
    - Dans un terminal, accéder au dossier du frontend avec la commande: cd frontend
    - Installer les dépendances avec la commande: npm install
