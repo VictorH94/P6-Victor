@@ -17,7 +17,7 @@ Développement Backend en Javascript
 - Stocker des données de manière sécurisée
 - Implémenter un modèle logique de données conformément à la réglementation
 
-## Mesures de sécurité mises en place
+## Mesures de sécurité mises en place:
 - Hashage du mot de passe utilisateur avec *bcrypt*
 - Manupulation sécurisée de la base de donnée avec *mongoose*
 - Vérification que l'email utilisateur soit unique dans la base de données avec *mongoose-unique-validator*
