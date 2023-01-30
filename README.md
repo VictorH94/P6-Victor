@@ -1,4 +1,4 @@
-# Formation OpenClassromms-Developpeur Web:
+# Formation OpenClassrooms-Développeur Web:
 P6 (6ième projet de la formation DEV Web): Construisez une API sécurisée pour une application d'avis gastronomiques - PIIQUANTE 
 
 ## Scénario: 
