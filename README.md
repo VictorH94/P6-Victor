@@ -31,17 +31,22 @@ Développement Backend en Javascript
 1/ Cloner le repository de l'application frontend: https://github.com/OpenClassrooms-Student-Center/Web-Developer-P6
    - Dans un terminal, accéder au dossier du frontend avec la commande: cd frontend
    - Installer les dépendances avec la commande: npm install
-   - Lancer: *ng serve* avec la commande:  npm run start    ou   npm run ng serve
-2/ Cloner le repository backend: https://github.com/VictorH94/P6-Victor
-3/ Ajouter un fichier de configuration nommé *.env* à la racine du backend. A l'intérieur, mettre 3 variables d'environnement "secrètes" suivants:
-   MONGODB_USER=Jessica
-   MONGODB_PASSWORD=dNEJOYEJhvTJiaBc
-   JWT_SECRET=secret-key-to-encrypt-the-token 
+   - Lancer: *ng serve* avec la commande:  npm run start    ou   npm run ng serve  
+
+2/ Cloner le repository backend: https://github.com/VictorH94/P6-Victor  
+
+3/ Ajouter un fichier de configuration nommé *.env* à la racine du backend. A l'intérieur, mettre 3 variables d'environnement "secrètes" suivants:  
+   MONGODB_USER=Jessica  
+   MONGODB_PASSWORD=dNEJOYEJhvTJiaBc  
+   JWT_SECRET=secret-key-to-encrypt-the-token  
+
 4/ Lancer le backend:
    - Dans un autre terminal, accéder au dossier du backend avec la commande: cd backend
    - Installer les dépendances avec la commande: npm install
-   - Lancer le serveur avec la commande: node server     ou     nodemon server
-5/ Le frontend est accessible à l'adresse http://localhost:4200
+   - Lancer le serveur avec la commande: node server     ou     nodemon server  
+
+5/ Le frontend est accessible à l'adresse http://localhost:4200  
+
 6/ Pour des tests spécifiques (avec postman par exemple), le backend répond à l'adresse: http://localhost:3000 (attention: authentification requise pour  
    toutes les routes /api/sauces/)
 
